@@ -1,0 +1,5 @@
+name = 'translatebot'
+
+[commands]
+install = 'npm install'
+run = 'node index.js'

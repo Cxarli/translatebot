@@ -1,10 +1,13 @@
 'use strict';
 
+const TOKEN = require('fs').readFileSync('./TOKEN').toString().trim();
+
 const gt = require('translation-google');
 const tg = require('node-telegram-bot-api');
 const LANGS = require('google-translate-api').languages;
 
-const bot = new tg(require('fs').readFileSync('./TOKEN').toString().trim(), { polling: true });
+const bot = new tg(TOKEN, { polling: true });
+
 
 
 let num_this_hour = +process.argv[2];
@@ -64,7 +67,7 @@ function user(obj) {
 		// console.debug({ me });
 		console.debug(`Connected as ${user(me)}`);
 
-		bot.onText(/^\/tr (from:[a-z]+ )?([a-z]+)( .+)?/i, async (msg, match) => {
+		bot.onText(/^\/tr (from:[a-z-]+ )?([a-z-]+)( .+)?/i, async (msg, match) => {
 			// console.debug({ msg, match });
 			console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} :: ${msg.text}`)
 
