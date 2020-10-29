@@ -1,0 +1,17 @@
+{
+  "name": "translatebot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "google-translate-api": "^2.3.0",
+    "node-telegram-bot-api": "^0.50.0",
+    "telegram-bot-api": "^2.0.1",
+    "translation-google": "^0.2.1"
+  }
+}
