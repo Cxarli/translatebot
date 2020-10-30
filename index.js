@@ -78,12 +78,25 @@ function nonl(x) { return x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(
 		// console.debug({ me });
 		console.debug(`Connected as ${user(me)}`);
 		const MY_ID = me.id;
+		const MY_UNAME = me.username;
 
-		bot.onText(/^\/t[rl]/i, async (msg) => {
+		bot.on('message', async (msg) => {
+			const rmsg = msg.reply_to_message;
 			// console.debug({ msg, match });
+			
+			if (!msg.text) return;
+	
+			if (msg.text.startsWith("/del") && rmsg && rmsg.from.id == MY_ID) try {
+				bot.deleteMessage(rmsg.chat.id, rmsg.message_id);
+				console.debug(`${(new Date).toISOString()} @@ ${user(msg.from)} !! deleted message`);
+				return;
+			} catch (x) { return; }
+
+
+			if (!/^\/t[rl]/i.test(msg.text)) return;
+			if (/^\/t[rl]@/.test(msg.text) && msg.text.split(' ')[0].split('@')[1] !== MY_UNAME) return;
 
 			try {
-				const rmsg = msg.reply_to_message;
 				const emsg = rmsg || msg;
 			
 				console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} :: ${nonl(msg.text)} %% ${rmsg ? nonl(rmsg.caption || rmsg.text) : '--'}`)
@@ -96,7 +109,8 @@ function nonl(x) { return x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(
 all optionally followed by newline(s) and a message
 				 */
 				let lines = msg.text.split('\n');
-				const parts = lines.shift().substring("/tr".length).trim().split(' ').filter(x => x);
+				// splice command away
+				const parts = lines.shift().split(' ').splice(1).filter(x => x);
 				lines = lines.join('\n').trim();
 
 				// console.debug({ lines, parts });
