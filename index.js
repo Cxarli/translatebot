@@ -65,9 +65,9 @@ function user(obj) {
 	return str.trim();
 }
 
-function escape(x) { return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;'); }
+function escape(x) { return x ? x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;') : 'undefined'; }
 
-function nonl(x) { return x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r'); }
+function nonl(x) { return x ? x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r') : 'undefined'; }
 
 (async function() {
 	'use strict';
@@ -97,9 +97,7 @@ function nonl(x) { return x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(
 			if (/^\/t[rl]@/.test(msg.text) && msg.text.split(' ')[0].split('@')[1] !== MY_UNAME) return;
 
 			try {
-				const emsg = rmsg || msg;
-			
-				console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} :: ${nonl(msg.text)} %% ${rmsg ? nonl(rmsg.caption || rmsg.text) : '--'}`)
+				console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} :: ${nonl(msg.caption || msg.text)} %% ${rmsg ? nonl(rmsg.caption || rmsg.text) : '--'}`)
 
 				/*
 /tr
@@ -108,7 +106,7 @@ function nonl(x) { return x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').replace(
 
 all optionally followed by newline(s) and a message
 				 */
-				let lines = msg.text.split('\n');
+				let lines = (msg.caption || msg.text).split('\n');
 				// splice command away
 				const parts = lines.shift().split(' ').splice(1).filter(x => x);
 				lines = lines.join('\n').trim();
@@ -117,12 +115,16 @@ all optionally followed by newline(s) and a message
 
 				let slang = '', tlang = '', input = '';
 
-				if (parts.length === 1) tlang = parts.shift();
-				else if (parts.length === 2) { slang = parts.shift(); tlang = parts.shift(); }
+				//   /tl from to (text)
+				if (parts.length >= 2) { slang = parts.shift(); tlang = parts.shift(); input = parts.join(' ') + ' '; }
+				//   /tl to
+				else if (parts.length == 1) { tlang = parts.shift(); }
+				//  /tl
+				else {}
 
 				switch (true) {
 					case !!lines:
-						input = lines;
+						input = input + lines;
 						break;
 
 					case !rmsg: break;
@@ -138,15 +140,44 @@ all optionally followed by newline(s) and a message
 						}
 
 						else { /* FALLTHROUGH */ }
+
 					default:
 						input = rmsg.caption || rmsg.text || '';
 				}
 
 
-				if (slang.toLowerCase() === 'zh') slang = 'zh-cn';
-				if (tlang.toLowerCase() === 'zh') tlang = 'zh-cn';
+				const lmap = {
+					we: 'cy', // welsh
+					dk: 'da', // danish
+					ge: 'de', // german
+					gr: 'el', // greek
+					sp: 'es', // spanish
+					ee: 'et', // estonian
+					ba: 'eu', // basque
+					pe: 'fa', // persian
+					ir: 'ga', // irish
+					sg: 'gd', // scots gaelic
+					cr: 'hr', // croatian
+					an: 'hy', // armenian
+					he: 'iw', // hebrew
+					jp: 'ja', // japanese
+					lu: 'lb', // luxembourgish
+					lx: 'lb', // luxembourgish
+					pu: 'ma', // punjabi
+					bu: 'my', // burmese
+					ch: 'ny', // chichewa
+					al: 'sq', // albanian
+					se: 'sv', // swedish
+					fl: 'tl', // filipino
+					zh: 'zh-cn', // chinese
+				};
+
+				if (slang in lmap) slang = lmap[slang];
+				if (tlang in lmap) tlang = lmap[tlang];
 
 				// console.debug({ slang, tlang, input });
+
+				const r_slang = slang, r_tlang = tlang;
 
 				if (!slang) slang = 'auto';
 				if (!tlang) tlang = 'en';
@@ -154,30 +185,34 @@ all optionally followed by newline(s) and a message
 				slang = LANGS.getCode(slang);
 				tlang = LANGS.getCode(tlang);
 
-				if (!slang) return void reply(msg, "&gt;w&lt; sowwy but i cant trawswate from that wangwage");
-				if (!tlang) return void reply(msg, "&gt;w&lt; sowwy but i cant trawswate to that wangwage");
+				if (!slang) { slang = 'auto'; tlang = 'auto'; input = r_slang + ' ' + r_tlang + ' ' + input; }
+				else if (!tlang) { tlang = 'auto'; input = r_tlang + ' ' + input; }
 
-				if (!input) return void reply(msg, "Huuuhhhhhhhh where is the text O-O... i dont see any text to twanswate");
+				if (!input) input = 'There is no text to translate.';
 
-				console.debug(`${slang} -> ${tlang} :: ${nonl(input)}`);
+				console.debug(`${r_slang}:${slang} -> ${r_tlang}:${tlang} %% ${nonl(input)}`);
 
-				if (!quota()) return void reply(msg, "WWAAAAAaaahhhh wewe hit the wimit &gt;~&lt; mommy google wont let me twawswate more ;-;");
+				
+				if (slang === 'auto' && tlang === 'auto' && input === 'There is no text to translate.') return void reply(msg, input);
+
+
+				if (!quota()) return void reply(msg, "Hit the translation quota. Try again next hour.");
 
 				const tres = await gt(input, { from: slang, to: tlang });
 
-				const r_slang = tres.from.language.iso;
-				if (r_slang !== slang) slang = `<i>${r_slang}</i>`;
+				const rr_slang = tres.from.language.iso;
+				if (rr_slang !== slang) slang = `<i>${rr_slang}</i>`;
 
 				const output = tres.text;
-				if (!output) return void reply(msg, "mommy google is mad... she didnt twanswate for me... ;-;");
+				if (!output) return void reply(msg, "No reply from translation backend.");
 
-				reply(emsg, `<b>${slang} -> ${tlang}</b>\n\n${escape(output)}`);
+				reply(rmsg || msg, `<b>${slang} -> ${tlang}</b>\n\n${escape(output)}`);
 
 			} catch (x) {
 				console.error({ date: new Date, msg });
 				console.error(x);
 
-				return void reply(msg, "[x_x] i dieded. maybe ask cxarli for help?");
+				return void reply(msg, "[x_x] translation failed. Maybe ask @Cxarli for help? Error message: <pre>" + x + "</pre>");
 			}
 		});
 
