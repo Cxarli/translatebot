@@ -93,7 +93,7 @@ function nonl(x) { return x ? x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').repl
 			} catch (x) { return; }
 
 
-			if (!/^\/t[rl]/i.test(msg.text)) return;
+			if (!/^\/t[rl]$/i.test(msg.text)) return;
 			if (/^\/t[rl]@/.test(msg.text) && msg.text.split(' ')[0].split('@')[1] !== MY_UNAME) return;
 
 			try {
