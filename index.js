@@ -93,7 +93,7 @@ function nonl(x) { return x ? x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').repl
 			} catch (x) { return; }
 
 
-			if (!/^\/t[rl]( |$)/i.test(msg.text)) return;
+			if (!/^\/t[rl]([ @]|\n|$)/i.test(msg.text)) return;
 			if (/^\/t[rl]@/.test(msg.text) && msg.text.split(' ')[0].split('@')[1] !== MY_UNAME) return;
 
 			try {
@@ -132,6 +132,7 @@ all optionally followed by newline(s) and a message
 					case rmsg.from.id === MY_ID:
 						const a = rmsg.text.split('\n');
 						const trl = a.shift().trim();
+						console.log(`trl: '${trl}'`);
 						input = a.join('\n').trim();
 
 						if (slang === '' && /^[a-z-]+ -> [a-z-]+$/i.test(trl)) {
@@ -139,7 +140,7 @@ all optionally followed by newline(s) and a message
 							break;
 						}
 
-						else { /* FALLTHROUGH */ }
+						else { /* FALLTHROUGH */ break; }
 
 					default:
 						input = rmsg.caption || rmsg.text || '';
