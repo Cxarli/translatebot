@@ -176,7 +176,6 @@ all optionally followed by newline(s) and a message
 				if (slang in lmap) slang = lmap[slang];
 				if (tlang in lmap) tlang = lmap[tlang];
 
-				// console.debug({ slang, tlang, input });
 
 				const r_slang = slang, r_tlang = tlang;
 
@@ -185,17 +184,16 @@ all optionally followed by newline(s) and a message
 
 				slang = LANGS.getCode(slang);
 				tlang = LANGS.getCode(tlang);
+				
+				console.debug({ r_slang, slang, r_tlang, tlang, input });
 
 				if (!slang) { slang = 'auto'; tlang = 'auto'; input = r_slang + ' ' + r_tlang + ' ' + input; }
 				else if (!tlang) { tlang = 'auto'; input = r_tlang + ' ' + input; }
 
-				if (!input) input = 'There is no text to translate.';
-
 				console.debug(`${r_slang}:${slang} -> ${r_tlang}:${tlang} %% ${nonl(input)}`);
 
 				
-				if (slang === 'auto' && tlang === 'auto' && input === 'There is no text to translate.') return void reply(msg, input);
-
+				if (!input) return void reply(msg, 'There is no text to translate.');
 
 				if (!quota()) return void reply(msg, "Hit the translation quota. Try again next hour.");
 
