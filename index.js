@@ -191,18 +191,40 @@ all optionally followed by newline(s) and a message
 				else if (!tlang) { tlang = 'auto'; input = r_tlang + ' ' + input; }
 
 				console.debug(`${r_slang}:${slang} -> ${r_tlang}:${tlang} %% ${nonl(input)}`);
-
 				
 				if (!input) return void reply(msg, 'There is no text to translate.');
 
 				if (!quota()) return void reply(msg, "Hit the translation quota. Try again next hour.");
 
-				const tres = await gt(input, { from: slang, to: tlang });
+				const es_input = input.replace(/@/g, '@@');
+
+				const unames = (
+					es_input.match(/@@[^\s@]+/g)
+					.sort((a,b) => b.length - a.length)
+				);
+				
+				const anon = unames.reduce(
+					(a,s,i) => a.replace(s, `@${i}@`),
+					es_input
+				);
+
+				console.debug(`    => anon (${unames}) ${nonl(anon)}`);
+
+				const tres = await gt(anon, { from: slang, to: tlang });
 
 				const rr_slang = tres.from.language.iso;
 				if (rr_slang !== slang) slang = `<i>${rr_slang}</i>`;
 
-				const output = tres.text;
+				const anon_output = tres.text;
+
+				const output = (
+					anon_output.replace(/@([0-9]+)@/g,
+						(_,i) => unames[i])
+					.replace(/@@/g, '@')
+				);
+
+				console.debug(`    deanon: ${nonl(anon_output)} => ${nonl(output)}`);
+
 				if (!output) return void reply(msg, "No reply from translation backend.");
 
 				reply(rmsg || msg, `<b>${slang} -> ${tlang}</b>\n\n${escape(output)}`);
