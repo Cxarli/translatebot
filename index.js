@@ -199,7 +199,7 @@ all optionally followed by newline(s) and a message
 				const es_input = input.replace(/@/g, '@@');
 
 				const unames = (
-					es_input.match(/@@[^\s@]+/g)
+					(es_input.match(/@@[^\s@]+/g) || [])
 					.sort((a,b) => b.length - a.length)
 				);
 				
