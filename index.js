@@ -116,7 +116,7 @@ all optionally followed by newline(s) and a message
 				let slang = '', tlang = '', input = '';
 
 				//   /tl from to (text)
-				if (parts.length >= 2) { slang = parts.shift(); tlang = parts.shift(); input = parts.join(' ') + ' '; }
+				if (parts.length >= 2) { slang = parts.shift(); tlang = parts.shift(); lines = parts.join(' ') + '\n' + lines; }
 				//   /tl to
 				else if (parts.length == 1) { tlang = parts.shift(); }
 				//  /tl
