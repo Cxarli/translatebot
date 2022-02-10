@@ -38,6 +38,18 @@ function reply(msg, text, opts) {
 	return bot.sendMessage(msg.chat.id, text, opts);
 }
 
+function chat(obj) {
+	/*
+    chat: {
+      id: -1001100000001,
+      title: "Super Awesome Place",
+      type: 'supergroup'
+    },
+	 */
+
+	return obj.type[0] + obj.type[1] + obj.id + ' <<' + obj.title + '>>';
+}
+
 function user(obj) {
 	/*
     from: {
@@ -97,7 +109,7 @@ function nonl(x) { return x ? x.replace(/\\/g,'\\\\').replace(/\n/g, '\\n').repl
 			if (/^\/t[rl]@/.test(msg.text) && msg.text.split(' ')[0].split('@')[1] !== MY_UNAME) return;
 
 			try {
-				console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} :: ${nonl(msg.caption || msg.text)} %% ${rmsg ? nonl(rmsg.caption || rmsg.text) : '--'}`)
+				console.debug(`${(new Date).toISOString()} ## ${num_this_hour+1} @@ ${user(msg.from)} ~~ ${chat(msg.chat)} :: ${nonl(msg.caption || msg.text)} %% ${rmsg ? nonl(rmsg.caption || rmsg.text) : '--'}`)
 
 				/*
 /tr
@@ -111,12 +123,12 @@ all optionally followed by newline(s) and a message
 				const parts = lines.shift().split(' ').splice(1).filter(x => x);
 				lines = lines.join('\n').trim();
 
-				// console.debug({ lines, parts });
+				console.debug({ lines, parts });
 
 				let slang = '', tlang = '', input = '';
 
 				//   /tl from to (text)
-				if (parts.length >= 2) { slang = parts.shift(); tlang = parts.shift(); lines = parts.join(' ') + '\n' + lines; }
+				if (parts.length >= 2) { slang = parts.shift(); tlang = parts.shift(); lines = (parts.join(' ') + '\n' + lines).trim(); }
 				//   /tl to
 				else if (parts.length == 1) { tlang = parts.shift(); }
 				//  /tl
@@ -191,6 +203,8 @@ all optionally followed by newline(s) and a message
 				else if (!tlang) { tlang = 'auto'; input = r_tlang + ' ' + input; }
 
 				console.debug(`${r_slang}:${slang} -> ${r_tlang}:${tlang} %% ${nonl(input)}`);
+
+				input = input.trim();
 				
 				if (!input) return void reply(msg, 'There is no text to translate.');
 
